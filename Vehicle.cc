@@ -6,12 +6,12 @@ Vehicle::Vehicle(int id, int capacity) {
   VehId = id;
   capacity_ = capacity;
   load_ = 0;
-  Route = new vector<Node>;
+  //Route = new vector<Node>;
 }
 
 void Vehicle::AddNode(Node customer) {
-  Route->push_back(customer);
-  load_ += customer.getDemand();
+  Route.push_back(customer);
+  //load_ += customer.getDemand();
 }
 
 bool Vehicle::CheckIfFits(int demand) {

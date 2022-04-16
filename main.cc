@@ -9,5 +9,6 @@ int main(int argc, char** argv) {
     string path = argv[1];
     VRP vrp(path);
     vrp.print();
+    vrp.GreedySolution();
   }
 }

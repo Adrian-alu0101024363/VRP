@@ -6,11 +6,12 @@
 class Vehicle {
  private:
   int VehId;
-  std::vector<Node>* Route;
+  std::vector<Node> Route;
   int capacity_;
   int load_;
   int current_;
  public:
+  Vehicle(){}
   Vehicle(int id, int capacity);
   ~Vehicle(){}
   int getVehId() {return VehId;}
@@ -25,7 +26,7 @@ class Vehicle {
   void setVehId(int id) {VehId = id;}
   void setCapacity(int capacity) {capacity_ = capacity;}
   void setLoad(int load) {load_ = load;}
-  std::vector<Node>& getRoute() {return *Route;}
+  std::vector<Node>& getRoute() {return Route;}
   void AddNode(Node customer);
   bool CheckIfFits(int demand);
 };

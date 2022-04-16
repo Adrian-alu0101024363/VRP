@@ -6,6 +6,8 @@
 #include <sstream>
 #include <algorithm>
 #include <iterator>
+#include <climits>
+#include <regex>
 
 using std::vector;
 using std::string;
@@ -15,14 +17,15 @@ class VRP {
 public:
   int NoOfVehicles;
   int NoOfCustomers;
-  std::vector<Vehicle> Vehicles;
+  vector<Vehicle> Vehicles;
   double cost;
-  std::vector<Node> Nodes;
-  std::vector<std::vector<double>> costMatrix;
+  vector<Node> Nodes;
+  vector<std::vector<double>> costMatrix;
   VRP(std::string file) {read(file);}
   ~VRP(){}
-  void read(std::string file);
+  void read(string file);
   void print();
-  std::vector<double> values(std::string line);
-  bool UnassignedCustomerExists()
+  vector<double> values(string line);
+  bool UnassignedCustomerExists(vector<Node> nodes);
+  void GreedySolution();
 };

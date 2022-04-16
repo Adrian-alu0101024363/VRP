@@ -1,0 +1,46 @@
+
+void VRP::GreedySolution() {
+  double CandCost, EndCost;
+  int VehIndex = 0;
+  Vehicles[0].setCurrent(0);
+  Vehicles[1].setCurrent(0);
+  int limit = NoOfCustomers / NoOfVehicles; //cuidado con inpar
+  while (UnassignedCustomerExists(Nodes)) {
+    int CustIndex = 0;
+    Node Candidate;
+    double minCost = (double)INT_MAX;
+    /*if (Vehicles[VehIndex].getRoute().size() == 0) {
+        //Vehicles[VehIndex].AddNode(Nodes[0]);
+    }*/
+    for (int i = 0; i < NoOfCustomers; i++) {
+      if (Nodes[i].getRouted() == false) {
+        int pos = Vehicles[VehIndex].getCurrent();
+        CandCost = costMatrix[pos][i];
+        //if (Vehicles[VehIndex].CheckIfFits(Nodes[i].getDemand())) {
+        //if (Vehicles[VehIndex].CheckIfFits(CandCost)) {
+          if (minCost > CandCost) {
+            cout << "En: " << pos + 1<< " : " << i + 1 << endl;
+              cout << CandCost << endl;
+              minCost = CandCost;
+              CustIndex = i;
+              Candidate = Nodes[i];
+          }
+        //}
+      }
+    }
+    cout << "in node: " << Nodes[CustIndex].getId() +1 << endl;
+    Vehicles[VehIndex].AddNode(Candidate);
+    Nodes[CustIndex].setRouted(true);
+    Vehicles[VehIndex].setCurrent(Nodes[CustIndex].getId());
+    cost += minCost;
+  }
+  EndCost = costMatrix[Vehicles[VehIndex].getCurrent()][0];
+  Vehicles[VehIndex].AddNode(Nodes[0]);
+  cost += EndCost;
+  cout << "Coste final: " << cost << endl;
+  cout << "Ruta:" << endl;
+  auto ruta = Vehicles[0].getRoute();
+  for (int k = 0; k < ruta.size(); k++) {
+    cout << ruta[k].getId() << ", ";
+  }
+}

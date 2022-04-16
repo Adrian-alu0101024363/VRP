@@ -9,6 +9,7 @@ private:
   bool IsRouted;
   bool isDepot;
 public:
+  Node(){}
   Node(int id, int demand) {NodeId = id;demand_ = demand;isDepot = false; IsRouted = false;}
   ~Node(){}
   int getId() {return NodeId;}
