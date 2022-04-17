@@ -8,24 +8,31 @@
 #include <iterator>
 #include <climits>
 #include <regex>
+#include <iomanip>
+#include <chrono>
 
 using std::vector;
 using std::string;
 
 class VRP {
-
-public:
+private:
   int NoOfVehicles;
   int NoOfCustomers;
   vector<Vehicle> Vehicles;
   double cost;
   vector<Node> Nodes;
-  vector<std::vector<double>> costMatrix;
-  VRP(std::string file) {read(file);}
+  vector<vector<double>> costMatrix;
+  string name;
+  double timeCost;
+public:
+  VRP(string file) {read(file);name = file;}
   ~VRP(){}
   void read(string file);
   void print();
   vector<double> values(string line);
   bool UnassignedCustomerExists(vector<Node> nodes);
   void GreedySolution();
+  void printGreedyTableu();
+  vector<Node> ConstructGrasp();
+  vector<Node> LRC(Node actual);
 };
