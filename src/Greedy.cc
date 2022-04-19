@@ -1,4 +1,4 @@
-#include "Greedy.h"
+#include "../headers/Greedy.h"
 
 Solution Greedy::solve(Vrp vrp) {
   double CandCost, EndCost;

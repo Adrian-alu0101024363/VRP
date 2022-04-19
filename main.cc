@@ -1,6 +1,6 @@
-#include "VRP.h"
-#include "Greedy.h"
-#include "Grasp.h"
+#include "headers/VRP.h"
+#include "headers/Greedy.h"
+#include "headers/Grasp.h"
 
 using namespace std;
 
