@@ -1,5 +1,6 @@
 #include "VRP.h"
 #include "Greedy.h"
+#include "Grasp.h"
 
 using namespace std;
 
@@ -16,14 +17,12 @@ int main(int argc, char** argv) {
     cout << setw(12) << "Distancia" << setw(6) << "Time" << endl;
     cout << path << setw(4) << vrp.getNumberOfCustomers() << setw(8) << sol.getCost();
     cout << setw(10) << sol.getTimeCost() << endl;
-    /*vector<Node> sol = vrp.ConstructGrasp();
+    Vrp vrp2(path, new Grasp());
+    auto sol2 = vrp2.solve();
     cout << setw(8) << "Algoritmo grasp" << endl;
     cout << "Problema" << setw(6) << "n ";
     cout << setw(12) << "Distancia" << setw(6) << "Time" << setw(6) << "RLC" << endl;
-    vrp.printGraspTableu();*/
-    /*VRP vrp2(path);
-    //for (int i = 0; i < sol.size(); i++) cout << sol[i].getId();
-    //vrp.print();
- */
+    cout << path << setw(4) << vrp2.getNumberOfCustomers() << setw(8) << sol2.getCost();
+    cout << setw(14) << sol2.getTimeCost() << setw(4) << 2 << endl;
   }
 }

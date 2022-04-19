@@ -38,6 +38,7 @@ public:
   int getNumberOfCustomers() {return NoOfCustomers;}
   vector<Vehicle>& getVehices() {return Vehicles;}
   vector<Node>& getNodes() {return Nodes;}
+  vector<Node> getNodesCopy() {return Nodes;}
   vector<vector<double>> getDistances() {return costMatrix;}
   vector<double> values(string line);
   bool UnassignedCustomerExists(vector<Node> nodes);
