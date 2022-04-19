@@ -1,5 +1,9 @@
+#ifndef VRP
+#define VRP
+#include "Algoritmo.h"
 #include "Node.h"
 #include "Vehicle.h"
+#include "Solution.h"
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -11,10 +15,9 @@
 #include <iomanip>
 #include <chrono>
 
-using std::vector;
-using std::string;
+using namespace std;
 
-class VRP {
+class Vrp {
 private:
   int NoOfVehicles;
   int NoOfCustomers;
@@ -24,15 +27,26 @@ private:
   vector<vector<double>> costMatrix;
   string name;
   double timeCost;
+  int candidatesNumber;
+  Traverse* method_;
 public:
-  VRP(string file) {read(file);name = file;}
-  ~VRP(){}
+  Vrp(string file, Traverse* met) {read(file);name = file; method_ = met;}
+  ~Vrp(){}
   void read(string file);
   void print();
+  int getNumberOfVehicles() {return NoOfVehicles;}
+  int getNumberOfCustomers() {return NoOfCustomers;}
+  vector<Vehicle>& getVehices() {return Vehicles;}
+  vector<Node>& getNodes() {return Nodes;}
+  vector<vector<double>> getDistances() {return costMatrix;}
   vector<double> values(string line);
   bool UnassignedCustomerExists(vector<Node> nodes);
   void GreedySolution();
   void printGreedyTableu();
+  void printGraspTableu();
   vector<Node> ConstructGrasp();
-  vector<Node> LRC(Node actual);
+  vector<Node> LRC(Node actual, int limit = 2);
+  Solution solve(){return method_->solve(*this);}
 };
+#endif
+// Clase solution, clase problema como en el tsp, algoritmo, grasp en un bucle.
