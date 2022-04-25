@@ -7,12 +7,12 @@ bool UnassignedCustomerExists(vector<Node> nodes) {
   return false;
 }
 
-Solution Grasp::solve(Vrp vrp, int rlc) {
+Solution Grasp::solve(Vrp vrp, int rlc, string method) {
   Nodes = vrp.getNodesCopy();
   Solution temp,final_solution;
   auto t_start = std::chrono::high_resolution_clock::now();
   temp = ConstructGrasp(vrp, rlc);
-  final_solution = LocalSearch(temp, vrp);
+  final_solution = LocalSearch(temp, vrp, method);
   auto t_end = std::chrono::high_resolution_clock::now();
   auto timeCost = std::chrono::duration<double, std::milli>(t_end-t_start).count();
   final_solution.setTimeCost(timeCost);
@@ -96,13 +96,13 @@ vector<Node> Grasp::LRC(Vrp vrp, Node actual, int limit) {
   return solution;
 }
 
-Solution Grasp::LocalSearch(Solution sol, Vrp vrp) {
+Solution Grasp::LocalSearch(Solution sol, Vrp vrp, string method) {
   Solution actual = sol;
   Solution best = actual;
-  //actual = IntraRouteLocalSearch(actual, vrp, actual.getCost());
-  //actual = IntraRouteLocalSearchSwap(actual, vrp, actual.getCost());
-  //actual = InterRouteLocalSearch(actual, vrp, actual.getCost());
-  actual = InterRouteLocalSearchSwap(actual, vrp, actual.getCost());
+  if (method == "Intra") actual = IntraRouteLocalSearch(actual, vrp, actual.getCost());
+  if (method == "Intra-swap") actual = IntraRouteLocalSearchSwap(actual, vrp, actual.getCost());
+  if (method == "Inter") actual = InterRouteLocalSearch(actual, vrp, actual.getCost());
+  if (method == "Inter-swap") actual = InterRouteLocalSearchSwap(actual, vrp, actual.getCost());
   //cout << "cost: " << actual.getCost() << endl;
   if (actual.getCost() < best.getCost()) {
     best = actual;

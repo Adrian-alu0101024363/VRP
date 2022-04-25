@@ -1,6 +1,6 @@
 #include "../headers/Greedy.h"
 
-Solution Greedy::solve(Vrp vrp, int rlc) {
+Solution Greedy::solve(Vrp vrp, int rlc, string method) {
   double CandCost, EndCost;
   int VehIndex = 0;
   double cost = 0;
@@ -12,7 +12,7 @@ Solution Greedy::solve(Vrp vrp, int rlc) {
   for (int j = 0; j < vrp.getNumberOfVehicles(); j++) {
     Vehicles[j].setCurrent(0);
   }
-  int limit = (NoOfCustomers / NoOfVehicles) + 1; //cuidado con inpar
+  int limit = (NoOfCustomers / NoOfVehicles) + (NoOfCustomers * 0.1);
   int cont = 0;
   auto t_start = std::chrono::high_resolution_clock::now();
   while (vrp.UnassignedCustomerExists(Nodes)) {

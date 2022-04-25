@@ -6,10 +6,10 @@ using namespace std;
 class Grasp : public Traverse {
   public:
   vector<Node> Nodes;
-  Solution solve(Vrp vrp, int rlc);
+  Solution solve(Vrp vrp, int rlc, string method = "Inter-swap");
   Solution ConstructGrasp(Vrp vrp, int rlc);
   vector<Node> LRC(Vrp vrp, Node actual, int limit = 2);
-  Solution LocalSearch(Solution sol, Vrp vrp);
+  Solution LocalSearch(Solution sol, Vrp vrp, string method = "Inter-swap");
   Solution IntraRouteLocalSearch(Solution old, Vrp vrp, double Cost);
   Solution IntraRouteLocalSearchSwap(Solution old, Vrp vrp, double Cost);
   Solution InterRouteLocalSearch(Solution old, Vrp vrp, double Cost);
