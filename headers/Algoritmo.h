@@ -8,7 +8,7 @@ class Vrp;
 
 class Traverse {
 public:
-virtual Solution solve(Vrp vrp) = 0;
+virtual Solution solve(Vrp vrp, int rlc) = 0;
 }; 
 
 

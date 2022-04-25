@@ -7,38 +7,66 @@ bool UnassignedCustomerExists(vector<Node> nodes) {
   return false;
 }
 
-Solution Grasp::solve(Vrp vrp) {
+Solution Grasp::solve(Vrp vrp, int rlc) {
   Nodes = vrp.getNodesCopy();
-  return ConstructGrasp(vrp);
+  Solution temp,final_solution;
+  auto t_start = std::chrono::high_resolution_clock::now();
+  temp = ConstructGrasp(vrp, rlc);
+  final_solution = LocalSearch(temp, vrp);
+  auto t_end = std::chrono::high_resolution_clock::now();
+  auto timeCost = std::chrono::duration<double, std::milli>(t_end-t_start).count();
+  final_solution.setTimeCost(timeCost);
+  return final_solution;
 }
 
-Solution Grasp::ConstructGrasp(Vrp vrp) {
+Solution Grasp::ConstructGrasp(Vrp vrp, int rlc) {
   vector<Node> solution;
   vector<Node> candidates;
   solution.push_back(Nodes[0]);
   Node actual = Nodes[0];
-  double CandCost;
+  double CandCost, EndCost;
   int i = 0;
   int cost = 0;
+  int VehIndex = 0;
+  vector<Vehicle> Vehicles = vrp.getVehices();
   auto costMatrix = vrp.getDistances();
   Nodes[0].setRouted(true);
-  cout << Nodes[0].getRouted();
-  auto t_start = std::chrono::high_resolution_clock::now();
+  //cout << Nodes[0].getRouted();
+  int NoOfCustomers = vrp.getNumberOfCustomers();
+  int NoOfVehicles = vrp.getNumberOfVehicles();
+  for (int j = 0; j < vrp.getNumberOfVehicles(); j++) {
+    Vehicles[j].setCurrent(0);
+  }
+  int limit = (NoOfCustomers / NoOfVehicles) + (NoOfCustomers * 0.1);
+  int cont = 0;
+
   while(UnassignedCustomerExists(Nodes)) {
-    candidates = LRC(vrp,actual);
+    if (cont == limit) {
+      Vehicles[VehIndex].AddNode(Nodes[0]);
+      EndCost = costMatrix[Vehicles[VehIndex].getCurrent()][0];
+      cost += EndCost;
+      VehIndex++;
+      Vehicles[VehIndex].AddNode(Nodes[0]);
+      cont = 0;
+    }
+    candidates = LRC(vrp,actual,rlc);
     i = actual.getId();
     int random = rand() % candidates.size(); //number between 0 and c.size
     actual = candidates[random];//select random node form candidates
-    solution.push_back(actual); // push selected candidate to solution
+    Vehicles[VehIndex].AddNode(actual); // push selected candidate to solution
+    Vehicles[VehIndex].setCurrent(Nodes[actual.getId()].getId());
     Nodes[actual.getId()].setRouted(true);
     CandCost = costMatrix[i][actual.getId()];
     cost += CandCost;
+    cont++;
   }
-  auto t_end = std::chrono::high_resolution_clock::now();
-  auto timeCost = std::chrono::duration<double, std::milli>(t_end-t_start).count();
-  Solution sol(timeCost,vrp.getNumberOfCustomers(),cost,2);
+  EndCost = costMatrix[Vehicles[VehIndex].getCurrent()][0];
+  Vehicles[VehIndex].AddNode(Nodes[0]);
+  cost += EndCost;
+  Solution sol(Vehicles,0,vrp.getNumberOfCustomers(),cost,2);
   return sol;
 }
+
 vector<Node> Grasp::LRC(Vrp vrp, Node actual, int limit) {
   int nodes = 0;
   double CandCost;
@@ -66,4 +94,140 @@ vector<Node> Grasp::LRC(Vrp vrp, Node actual, int limit) {
     solution.push_back(Candidate);
   }
   return solution;
+}
+
+Solution Grasp::LocalSearch(Solution sol, Vrp vrp) {
+  Solution actual = sol;
+  Solution best = actual;
+  //actual = IntraRouteLocalSearch(actual, vrp, actual.getCost());
+  actual = IntraRouteLocalSearchSwap(actual, vrp, actual.getCost());
+  cout << "cost: " << actual.getCost() << endl;
+  if (actual.getCost() < best.getCost()) {
+    best = actual;
+    cout << "best" << endl;
+  }
+  return best;
+}
+
+//Insertion
+Solution Grasp::IntraRouteLocalSearch(Solution old, Vrp vrp, double Cost) {
+  vector<Node> rt;
+  double BestNCost,NeigthboorCost;
+  int SwapIndexA = -1, SwapIndexB = -1, SwapRoute =-1;
+  int MAX_ITERATIONS = 10000;
+  int iteration_number= 0;
+  bool Termination = false;
+  auto Vehicles = old.getRoutes();
+  auto CostMatrix = vrp.getDistances();
+  while (!Termination) {
+    BestNCost = INT_MAX;
+    iteration_number++;
+    for (int VehIndex = 0; VehIndex < Vehicles.size(); VehIndex++) {
+      rt = Vehicles[VehIndex].getRoute();
+      int RoutLength = rt.size();
+      for (int i = 1; i < rt.size() - 1; i++) { //Not possible to move depot!
+        for (int j = 0; j < rt.size()-1; j++) {//Not possible to move after last Depot!
+          if ( ( j != i ) && (j != i-1) ) { // Not a move that cHanges solution cost
+
+            double MinusCost1 = CostMatrix[rt[i-1].getId()][rt[i].getId()];
+            double MinusCost2 =  CostMatrix[rt[i].getId()][rt[i+1].getId()];
+            double MinusCost3 =  CostMatrix[rt[j].getId()][rt[j+1].getId()];
+
+            double AddedCost1 = CostMatrix[rt[i-1].getId()][rt[i+1].getId()];
+            double AddedCost2 = CostMatrix[rt[j].getId()][rt[i].getId()];
+            double AddedCost3 = CostMatrix[rt[i].getId()][rt[j+1].getId()];
+
+            NeigthboorCost = AddedCost1 + AddedCost2 + AddedCost3
+                    - MinusCost1 - MinusCost2 - MinusCost3;
+            
+            if (NeigthboorCost < BestNCost) {
+                BestNCost = NeigthboorCost;
+                SwapIndexA  = i;
+                SwapIndexB  = j;
+                SwapRoute = VehIndex;
+              }
+          }
+        }
+     }
+    }
+    if (BestNCost < 0) {
+      rt = Vehicles[SwapRoute].getRoute();
+      Node SwapNode = rt[SwapIndexA];
+      rt.erase(next(rt.begin(),SwapIndexA));
+      if (SwapIndexA < SwapIndexB) { 
+        rt.insert(next(rt.begin(),SwapIndexB), SwapNode); 
+      } else { 
+        rt.insert(next(rt.begin(),SwapIndexB+1), SwapNode); 
+      }
+      Cost  += BestNCost;
+      std::cout << "best local cost: " << Cost << endl;
+      Solution sol(Vehicles, 0, vrp.getNumberOfCustomers(),Cost,2);
+      return sol;
+    } else {
+        Termination = true;
+    }
+    if (iteration_number == MAX_ITERATIONS) {
+        Termination = true;
+    }
+  }
+  Solution sol(Vehicles, 0, vrp.getNumberOfCustomers(),Cost,2);
+  return sol;
+}
+
+Solution Grasp::IntraRouteLocalSearchSwap(Solution old, Vrp vrp, double Cost) {
+  vector<Node> rt;
+  double BestNCost,NeigthboorCost;
+  int SwapIndexA = -1, SwapIndexB = -1, SwapRoute =-1;
+  int MAX_ITERATIONS = 10000;
+  int iteration_number= 0;
+  bool Termination = false;
+  auto Vehicles = old.getRoutes();
+  auto CostMatrix = vrp.getDistances();
+  while (!Termination) {
+    BestNCost = INT_MAX;
+    iteration_number++;
+    for (int VehIndex = 0; VehIndex < Vehicles.size(); VehIndex++) {
+      rt = Vehicles[VehIndex].getRoute();
+      int RoutLength = rt.size();
+      for (int i = 1; i < rt.size() - 1; i++) { //Not possible to move depot!
+        for (int j = 0; j < rt.size()-1; j++) {//Not possible to move after last Depot!
+          if ( ( j != i ) && (j != i-1) ) { // Not a move that cHanges solution cost
+
+            double MinusCost1 = CostMatrix[rt[i-1].getId()][rt[i].getId()];
+            double MinusCost2 =  CostMatrix[rt[i].getId()][rt[i+1].getId()];
+            double MinusCost3 =  CostMatrix[rt[j].getId()][rt[j+1].getId()];
+
+            double AddedCost1 = CostMatrix[rt[i-1].getId()][rt[i+1].getId()];
+            double AddedCost2 = CostMatrix[rt[j].getId()][rt[i].getId()];
+            double AddedCost3 = CostMatrix[rt[i].getId()][rt[j+1].getId()];
+
+            NeigthboorCost = AddedCost1 + AddedCost2 + AddedCost3
+                    - MinusCost1 - MinusCost2 - MinusCost3;
+            
+            if (NeigthboorCost < BestNCost) {
+                BestNCost = NeigthboorCost;
+                SwapIndexA  = i;
+                SwapIndexB  = j;
+                SwapRoute = VehIndex;
+              }
+          }
+        }
+     }
+    }
+    if (BestNCost < 0) {
+      rt = Vehicles[SwapRoute].getRoute();
+      swap(rt[SwapIndexA], rt[SwapIndexB]);
+      Cost  += BestNCost;
+      std::cout << "best local cost: " << Cost << endl;
+      Solution sol(Vehicles, 0, vrp.getNumberOfCustomers(),Cost,2);
+      return sol;
+    } else {
+        Termination = true;
+    }
+    if (iteration_number == MAX_ITERATIONS) {
+        Termination = true;
+    }
+  }
+  Solution sol(Vehicles, 0, vrp.getNumberOfCustomers(),Cost,2);
+  return sol;
 }
