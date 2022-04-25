@@ -22,11 +22,12 @@ int main(int argc, char** argv) {
     cout << "Problema" << setw(6) << "n ";
     cout << setw(12) << "Distancia" << setw(6) << "Time" << setw(6) << "RLC" << endl;
     int i = 0;
-    while (i < 3) {
+    int limit = 6;
+    while (i < limit) {
     Vrp vrp2(path, new Grasp());
     auto sol2 = vrp2.solve(i + 2);
     cout << path << setw(4) << vrp2.getNumberOfCustomers() << setw(8) << sol2.getCost();
-    cout << setw(14) << sol2.getTimeCost() << setw(4) << i + 2 << endl;
+    cout << setw(12) << sol2.getTimeCost() << setw(4) << i + 2 << endl;
     i++;
     }
   }

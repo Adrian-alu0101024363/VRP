@@ -12,4 +12,6 @@ class Grasp : public Traverse {
   Solution LocalSearch(Solution sol, Vrp vrp);
   Solution IntraRouteLocalSearch(Solution old, Vrp vrp, double Cost);
   Solution IntraRouteLocalSearchSwap(Solution old, Vrp vrp, double Cost);
+  Solution InterRouteLocalSearch(Solution old, Vrp vrp, double Cost);
+  Solution InterRouteLocalSearchSwap(Solution old, Vrp vrp, double Cost);
 };
