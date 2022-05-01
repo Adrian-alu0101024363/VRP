@@ -47,19 +47,21 @@ Solution Grasp::ConstructGrasp(Vrp vrp, int rlc) {
       EndCost = costMatrix[Vehicles[VehIndex].getCurrent()][0];
       cost += EndCost;
       VehIndex++;
-      Vehicles[VehIndex].AddNode(Nodes[0]);
+      //Vehicles[VehIndex].AddNode(Nodes[0]);
       cont = 0;
+      actual = Nodes[0];
+    } else {
+      candidates = LRC(vrp,actual,rlc);
+      i = actual.getId();
+      int random = rand() % candidates.size(); //number between 0 and c.size
+      actual = candidates[random];//select random node form candidates
+      Vehicles[VehIndex].AddNode(actual); // push selected candidate to solution
+      Vehicles[VehIndex].setCurrent(Nodes[actual.getId()].getId());
+      Nodes[actual.getId()].setRouted(true);
+      CandCost = costMatrix[i][actual.getId()];
+      cost += CandCost;
+      cont++;
     }
-    candidates = LRC(vrp,actual,rlc);
-    i = actual.getId();
-    int random = rand() % candidates.size(); //number between 0 and c.size
-    actual = candidates[random];//select random node form candidates
-    Vehicles[VehIndex].AddNode(actual); // push selected candidate to solution
-    Vehicles[VehIndex].setCurrent(Nodes[actual.getId()].getId());
-    Nodes[actual.getId()].setRouted(true);
-    CandCost = costMatrix[i][actual.getId()];
-    cost += CandCost;
-    cont++;
   }
   EndCost = costMatrix[Vehicles[VehIndex].getCurrent()][0];
   Vehicles[VehIndex].AddNode(Nodes[0]);
@@ -100,16 +102,20 @@ vector<Node> Grasp::LRC(Vrp vrp, Node actual, int limit) {
 Solution Grasp::LocalSearch(Solution sol, Vrp vrp, string method) {
   Solution actual = sol;
   Solution best = actual;
-  /*if (method == "Intra") actual = IntraRouteLocalSearch(actual, vrp, actual.getCost());
+  if (method == "Intra") actual = IntraRouteLocalSearch(actual, vrp, actual.getCost());
   if (method == "Intra-swap") actual = IntraRouteLocalSearchSwap(actual, vrp, actual.getCost());
-  if (method == "Inter") actual = InterRouteLocalSearch(actual, vrp, actual.getCost());
-  if (method == "Inter-swap") actual = InterRouteLocalSearchSwap(actual, vrp, actual.getCost());*/
-  actual = IntraRouteLocalSearchSwap(actual,vrp,actual.getCost());
+  if (method == "Inter") return InterRouteLocalSearch(actual, vrp, actual.getCost());
+  if (method == "Inter-swap") return InterRouteLocalSearchSwap(actual, vrp, actual.getCost());
+  //cout << "Original disposition: ";
+  //sol.PrintNodes();
+  //sol.checkCost(vrp.getDistances());
+  //cout << endl;
+  //actual = InterRouteLocalSearchSwap(actual,vrp,sol.getCost());
   //cout << "cost: " << actual.getCost() << endl;
-  if ((actual.getCost() < best.getCost())&& actual.getCost() > 0) {
+  if ((actual.getCost() < best.getCost())/*&& actual.getCost() > 0*/) {
     best = actual;
-    //best = InterRouteLocalSearchSwap(best, vrp, actual.getCost());
-    //return LocalSearch(best,vrp,method);
+    //best = InterRouteLocalSearch(best, vrp, actual.getCost());
+    return LocalSearch(best,vrp,method);
   }
   return best;
 }
@@ -162,11 +168,15 @@ Solution Grasp::IntraRouteLocalSearch(Solution old, Vrp vrp, double Cost) {
       rt.insert(next(rt.begin(),SwapIndexB+1), SwapNode); 
     }
     Cost  += BestNCost;
+    Vehicles[SwapRoute].setRoute(rt);
     //std::cout << "best local cost: " << Cost << endl;
-    double temp1 = Vehicles[0].getRouteCost(vrp.getDistances());
-    double temp2 = Vehicles[1].getRouteCost(vrp.getDistances());
-    cout << "Coste total: " << temp1 + temp2;
+    //double temp1 = Vehicles[0].getRouteCost(vrp.getDistances());
+    //double temp2 = Vehicles[1].getRouteCost(vrp.getDistances());
+    //cout << "Coste total: " << temp1 + temp2;
     Solution sol(Vehicles, 0, vrp.getNumberOfCustomers(),Cost,2);
+    //cout << "New disposition: ";
+    //sol.checkCost(vrp.getDistances());
+    //sol.PrintNodes();
     return sol;
   }
   Solution sol(Vehicles, 0, vrp.getNumberOfCustomers(),Cost,2);
@@ -184,23 +194,31 @@ Solution Grasp::IntraRouteLocalSearchSwap(Solution old, Vrp vrp, double Cost) {
   iteration_number++;
   for (int VehIndex = 0; VehIndex < Vehicles.size(); VehIndex++) {
     rt = Vehicles[VehIndex].getRoute();
+
     int RoutLength = rt.size();
     for (int i = 1; i < rt.size() - 1; i++) { //Not possible to move depot!
-      for (int j = 0; j < rt.size()-1; j++) {//Not possible to move after last Depot!
-        if ( ( j != i ) && (j != i-1) ) { // Not a move that cHanges solution cost
+      for (int j = i + 1; j < rt.size()-1; j++) {//Not possible to move after last Depot!
+        if ( ( j != i ) && (j > 0)) { // Not a move that cHanges solution cost
 
           double MinusCost1 = CostMatrix[rt[i-1].getId()][rt[i].getId()];
           double MinusCost2 =  CostMatrix[rt[i].getId()][rt[i+1].getId()];
           double MinusCost3 =  CostMatrix[rt[j].getId()][rt[j+1].getId()];
+          double MinusCost4 = CostMatrix[rt[j-1].getId()][rt[j].getId()];
 
-          double AddedCost1 = CostMatrix[rt[i-1].getId()][rt[i+1].getId()];
-          double AddedCost2 = CostMatrix[rt[j].getId()][rt[i].getId()];
-          double AddedCost3 = CostMatrix[rt[i].getId()][rt[j+1].getId()];
-
-          NeigthboorCost = AddedCost1 + AddedCost2 + AddedCost3
-                  - MinusCost1 - MinusCost2 - MinusCost3;
-          
+          double AddedCost1 = CostMatrix[rt[i-1].getId()][rt[j].getId()];
+          double AddedCost2 = CostMatrix[rt[j].getId()][rt[i+1].getId()];
+          double AddedCost3 = CostMatrix[rt[j-1].getId()][rt[i].getId()];
+          double AddedCost4 = CostMatrix[rt[i].getId()][rt[j+1].getId()];
+          if ((j == i+1)) {
+            AddedCost2 = CostMatrix[rt[j].getId()][rt[i].getId()];
+            MinusCost4 = 0;
+          } 
+        
+          NeigthboorCost = AddedCost1 + AddedCost2 + AddedCost3 + AddedCost4
+                  - MinusCost1 - MinusCost2 - MinusCost3 - MinusCost4;
+          //cout << "ne cost: " << NeigthboorCost << endl;
           if (NeigthboorCost < BestNCost) {
+            //cout << "Swap: " << rt[i].getId() << " with: " << rt[j].getId() << endl;
             BestNCost = NeigthboorCost;
             SwapIndexA  = i;
             SwapIndexB  = j;
@@ -214,9 +232,10 @@ Solution Grasp::IntraRouteLocalSearchSwap(Solution old, Vrp vrp, double Cost) {
       rt = Vehicles[SwapRoute].getRoute();
       swap(rt[SwapIndexA], rt[SwapIndexB]);
       Cost  += BestNCost;
+      Vehicles[SwapRoute].setRoute(rt);
       Solution sol(Vehicles, 0, vrp.getNumberOfCustomers(),Cost,2);
-      sol.checkCost(vrp.getDistances());
-      sol.PrintNodes();
+      //sol.checkCost(vrp.getDistances());
+      //sol.PrintNodes();
       return sol;
     }
   Solution sol(Vehicles, 0, vrp.getNumberOfCustomers(),Cost,2);
@@ -269,26 +288,26 @@ Solution Grasp::InterRouteLocalSearch(Solution old, Vrp vrp, double Cost) {
       }
   }
 
-    if (BestNCost < 0) {// If Best Neightboor Cost is better than the current
-        RouteFrom = Vehicles[SwapRouteFrom].getRoute();
-        RouteTo = Vehicles[SwapRouteTo].getRoute();
-        Node SwapNode = RouteFrom[SwapIndexA];
-        RouteFrom.erase(next(RouteFrom.begin(), SwapIndexA));
-        if (SwapRouteFrom == SwapRouteTo) {
-            if (SwapIndexA < SwapIndexB) {
-              RouteTo.insert(next(RouteTo.begin(),SwapIndexB), SwapNode);
-            } else {
-              RouteTo.insert(next(RouteTo.begin(),SwapIndexB + 1), SwapNode);
-            }
+  if (BestNCost < 0) {// If Best Neightboor Cost is better than the current
+    RouteFrom = Vehicles[SwapRouteFrom].getRoute();
+    RouteTo = Vehicles[SwapRouteTo].getRoute();
+    Node SwapNode = RouteFrom[SwapIndexA];
+    RouteFrom.erase(next(RouteFrom.begin(), SwapIndexA));
+    if (SwapRouteFrom == SwapRouteTo) {
+        if (SwapIndexA < SwapIndexB) {
+          RouteTo.insert(next(RouteTo.begin(),SwapIndexB), SwapNode);
         } else {
           RouteTo.insert(next(RouteTo.begin(),SwapIndexB + 1), SwapNode);
         }
-        Vehicles[SwapRouteFrom].setRoute(RouteFrom);
-        Vehicles[SwapRouteTo].setRoute(RouteTo);
-        Cost  += BestNCost;
-        Solution sol(Vehicles, 0, vrp.getNumberOfCustomers(),Cost,2);
-        return sol;
-    } 
+    } else {
+      RouteTo.insert(next(RouteTo.begin(),SwapIndexB + 1), SwapNode);
+    }
+    Vehicles[SwapRouteFrom].setRoute(RouteFrom);
+    Vehicles[SwapRouteTo].setRoute(RouteTo);
+    Cost  += BestNCost;
+    Solution sol(Vehicles, 0, vrp.getNumberOfCustomers(),Cost,2);
+    return sol;
+  } 
   Solution sol(Vehicles, 0, vrp.getNumberOfCustomers(),Cost,2);
   return sol;
 }
@@ -305,37 +324,42 @@ Solution Grasp::InterRouteLocalSearchSwap(Solution old, Vrp vrp, double Cost) {
   auto CostMatrix = vrp.getDistances();
   BestNCost = INT_MAX;
   for (VehIndexFrom = 0;  VehIndexFrom < Vehicles.size();  VehIndexFrom++) {
-      RouteFrom = Vehicles[VehIndexFrom].getRoute();
-      int RoutFromLength = RouteFrom.size();
-      for (int i = 1; i < RoutFromLength - 1; i++) { //Not possible to move depot!
-          for (VehIndexTo = 0; VehIndexTo < Vehicles.size(); VehIndexTo++) {
-            RouteTo =  Vehicles[VehIndexTo].getRoute();
-            int RouteTolength = RouteTo.size();
-            for (int j = 0; (j < RouteTolength - 1); j++) {//Not possible to move after last Depot!
-              if (( (VehIndexFrom == VehIndexTo) && ((j == i) || (j == i - 1)) ) == false)  // Not a move that Changes solution cost
-              {
-                double MinusCost1 = CostMatrix[RouteFrom[i - 1].getId()][RouteFrom[i].getId()];
-                double MinusCost2 = CostMatrix[RouteFrom[i].getId()][RouteFrom[i + 1].getId()];
-                double MinusCost3 = CostMatrix[RouteTo[j].getId()][RouteTo[j + 1].getId()];
+    RouteFrom = Vehicles[VehIndexFrom].getRoute();
+    int RoutFromLength = RouteFrom.size();
+    for (int i = 1; i < RoutFromLength - 1; i++) { //Not possible to move depot!
+        for (VehIndexTo = VehIndexFrom + 1; VehIndexTo < Vehicles.size(); VehIndexTo++) {
+          RouteTo =  Vehicles[VehIndexTo].getRoute();
+          int RouteTolength = RouteTo.size();
+          for (int j = 1; (j < RouteTolength - 1); j++) {//Not possible to move after last Depot!
+            if (( (VehIndexFrom == VehIndexTo) && ((j == i) || (j == i - 1)) ) == false)  // Not a move that Changes solution cost
+            {
+              double MinusCost1 = CostMatrix[RouteFrom[i - 1].getId()][RouteFrom[i].getId()];
+              double MinusCost2 = CostMatrix[RouteFrom[i].getId()][RouteFrom[i + 1].getId()];
+              double MinusCost3 = CostMatrix[RouteTo[j].getId()][RouteTo[j + 1].getId()];
+              double MinusCost4 = CostMatrix[RouteTo[j - 1].getId()][RouteTo[j].getId()];
 
-                double AddedCost1 = CostMatrix[RouteFrom[i - 1].getId()][RouteFrom[i + 1].getId()];
-                double AddedCost2 = CostMatrix[RouteTo[j].getId()][RouteFrom[i].getId()];
-                double AddedCost3 = CostMatrix[RouteFrom[i].getId()][RouteTo[j + 1].getId()];
+              double AddedCost1 = CostMatrix[RouteFrom[i - 1].getId()][RouteFrom[j].getId()];
+              double AddedCost2 = CostMatrix[RouteTo[j].getId()][RouteFrom[i + 1].getId()];
+              double AddedCost3 = CostMatrix[RouteTo[j-1].getId()][RouteFrom[i].getId()];
+              double AddedCost4 = CostMatrix[RouteFrom[i].getId()][RouteTo[j+1].getId()];
+              if ((j == i+1)) {
+                AddedCost2 = CostMatrix[RouteTo[j].getId()][RouteFrom[i].getId()];
+                MinusCost4 = 0;
+              } 
+              NeigthboorCost = AddedCost1 + AddedCost2 + AddedCost3 + AddedCost4
+                      - MinusCost1 - MinusCost2 - MinusCost3 - MinusCost4;
 
-                NeigthboorCost = AddedCost1 + AddedCost2 + AddedCost3
-                        - MinusCost1 - MinusCost2 - MinusCost3;
-
-                if (NeigthboorCost < BestNCost) {
-                  BestNCost = NeigthboorCost;
-                  SwapIndexA = i;
-                  SwapIndexB = j;
-                  SwapRouteFrom = VehIndexFrom;
-                  SwapRouteTo = VehIndexTo;
-                }
+              if (NeigthboorCost < BestNCost) {
+                BestNCost = NeigthboorCost;
+                SwapIndexA = i;
+                SwapIndexB = j;
+                SwapRouteFrom = VehIndexFrom;
+                SwapRouteTo = VehIndexTo;
               }
             }
           }
-      }
+        }
+    }
   }
     if (BestNCost < 0) {// If Best Neightboor Cost is better than the current
         RouteFrom = Vehicles[SwapRouteFrom].getRoute();

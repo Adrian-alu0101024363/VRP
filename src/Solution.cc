@@ -20,14 +20,17 @@ void Solution::checkCost(vector<vector<double>> costMatrix) {
     double cap1 = route.getRouteCost(costMatrix);
     total += cap1;
   }
-  if (total == getCost()) cout << "Correct cost";
-  cout << "Correct is: " << total << " Cost is:" << getCost() << endl;
+  if (total == getCost()) {
+    cout << "Cost is correct" << endl;
+  } else {
+    cout << "Correct is: " << total << " Cost is:" << getCost() << endl;
+  }
 
 }
 
 void Solution::PrintNodes() {
   for (int i = 0; i < Routes.size(); i++) {
-  auto route = Routes[i];
-  route.print();
+    auto route = Routes[i];
+    route.print();
   }
 }

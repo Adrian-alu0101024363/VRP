@@ -1,5 +1,5 @@
 n_clientes:	4
-n_vehiculos:	1
+n_vehiculos:	2
 Distancia_entre_cada_par_de_clientes
 0    10 2 3 2
 1 0 20 3 2

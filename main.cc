@@ -9,7 +9,7 @@ int main(int argc, char** argv) {
     cout << "Please specify the path to file" << endl;
   } else {
     string path = argv[1];
-    Vrp vrp(path, new Greedy());
+    /*Vrp vrp(path, new Greedy());
     Solution sol;
     sol = vrp.solve(0);
     cout << setw(8) << "Algoritmo voraz" << endl;
@@ -21,14 +21,14 @@ int main(int argc, char** argv) {
     cout << setw(8) << "Algoritmo grasp" << endl;
     cout << "Problema" << setw(6) << "n ";
     cout << setw(12) << "Distancia" << setw(6) << "Time" << setw(6) << "RLC" << endl;
-    int i = 0;
-    int limit = 6;
+    */int i = 0;
+    int limit = 3;
     while (i < limit) {
-    Vrp vrp2(path, new Grasp());
-    auto sol2 = vrp2.solve(i + 2);
-    cout << path << setw(4) << vrp2.getNumberOfCustomers() - 1<< setw(8) << sol2.getCost();
-    cout << setw(12) << sol2.getTimeCost() << setw(4) << i + 2 << endl;
-    i++;
+      Vrp vrp2(path, new Grasp());
+      auto sol2 = vrp2.solve(i + 2);
+      cout << path << setw(4) << vrp2.getNumberOfCustomers() - 1<< setw(8) << sol2.getCost();
+      cout << setw(12) << sol2.getTimeCost() << setw(4) << i + 2 << endl;
+      i++;
     }
   }
 }

@@ -29,7 +29,7 @@ class Vehicle {
   void setVehId(int id) {VehId = id;}
   void setCapacity(int capacity) {capacity_ = capacity;}
   void setLoad(int load) {load_ = load;}
-  std::vector<Node>& getRoute() {return Route;}
+  std::vector<Node> getRoute() {return Route;}
   void setRoute(std::vector<Node> route) {Route = route;}
   void AddNode(Node customer);
   bool CheckIfFits(int demand);
