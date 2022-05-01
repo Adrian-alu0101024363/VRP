@@ -4,6 +4,7 @@
 #include "Solution.h"
 #include "Vehicle.h"
 #include <vector>
+#include <iostream>
 
 using namespace std;
 
@@ -20,7 +21,9 @@ class Solution {
   int getSize() {return size_;}
   double getTimeCost() {return timeCost;}
   double getCost() {return cost_;}
+  void checkCost(vector<vector<double>> costMatrix);
   void setTimeCost(double time) {timeCost = time;}
   vector<Vehicle>& getRoutes() {return Routes;}
+  void PrintNodes();
 };
 #endif

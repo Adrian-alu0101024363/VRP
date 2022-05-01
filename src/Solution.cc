@@ -12,3 +12,22 @@ Solution::Solution(vector<Vehicle> routes, double time, int size, double cost, i
   cost_ = cost;
   size_ = size;
 }
+
+void Solution::checkCost(vector<vector<double>> costMatrix) {
+  double total = 0;
+  for (int i = 0; i < Routes.size(); i++) {
+    auto route = Routes[i];
+    double cap1 = route.getRouteCost(costMatrix);
+    total += cap1;
+  }
+  if (total == getCost()) cout << "Correct cost";
+  cout << "Correct is: " << total << " Cost is:" << getCost() << endl;
+
+}
+
+void Solution::PrintNodes() {
+  for (int i = 0; i < Routes.size(); i++) {
+  auto route = Routes[i];
+  route.print();
+  }
+}

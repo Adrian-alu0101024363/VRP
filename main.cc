@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
     cout << setw(8) << "Algoritmo voraz" << endl;
     cout << "Problema" << setw(6) << "n ";
     cout << setw(12) << "Distancia" << setw(6) << "Time" << endl;
-    cout << path << setw(4) << vrp.getNumberOfCustomers() << setw(8) << sol.getCost();
+    cout << path << setw(4) << vrp.getNumberOfCustomers() - 1<< setw(8) << sol.getCost();
     cout << setw(10) << sol.getTimeCost() << endl;
 
     cout << setw(8) << "Algoritmo grasp" << endl;
@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
     while (i < limit) {
     Vrp vrp2(path, new Grasp());
     auto sol2 = vrp2.solve(i + 2);
-    cout << path << setw(4) << vrp2.getNumberOfCustomers() << setw(8) << sol2.getCost();
+    cout << path << setw(4) << vrp2.getNumberOfCustomers() - 1<< setw(8) << sol2.getCost();
     cout << setw(12) << sol2.getTimeCost() << setw(4) << i + 2 << endl;
     i++;
     }

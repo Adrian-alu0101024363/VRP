@@ -29,3 +29,18 @@ void Vehicle::AddNode(Node customer) {
 bool Vehicle::CheckIfFits(int demand) {
   return ((load_ + demand <= capacity_));
 }*/
+
+double Vehicle::getRouteCost(vector<vector<double>> costMatrix) {
+  double cost = 0;
+  for (int i = 0; i < Route.size() - 1; i++) {
+    cost += costMatrix[Route[i].getId()][Route[i+1].getId()];
+  }
+  return cost;
+}
+
+void Vehicle::print() {
+  for (int i = 0; i < Route.size(); i++) {
+    cout << Route[i].getId() << ",";
+  }
+  cout << endl;
+}

@@ -2,6 +2,9 @@
 #define VEHICLE
 #include "Node.h"
 #include <vector>
+#include <iostream>
+
+using namespace std;
 
 class Vehicle {
  private:
@@ -30,6 +33,8 @@ class Vehicle {
   void setRoute(std::vector<Node> route) {Route = route;}
   void AddNode(Node customer);
   bool CheckIfFits(int demand);
+  double getRouteCost(vector<vector<double>> costMatrix);
+  void print();
 };
 
 #endif
