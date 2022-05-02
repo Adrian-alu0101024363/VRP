@@ -1,13 +1,85 @@
-#include "../headers/Grasp.h"
+#include "../headers/Gvns.h"
 
-bool UnassignedCustomerExists(vector<Node> nodes) {
+bool Gvns::UnassignedCustomerExists(vector<Node> nodes) {
   for (int i = 1; i < nodes.size(); i++) {
     if (!nodes[i].getRouted()) return true;
   }
   return false;
 }
 
-Solution Grasp::solve(Vrp vrp, int rlc, int method) {
+Solution Gvns::solve(Vrp vrp, int rlc, int method) {
+  Solution prov = grasp(vrp,rlc,method);
+  Solution best = prov;
+  int iter = 0;
+  auto t_start = std::chrono::high_resolution_clock::now();
+  while(iter < 6) {
+    Solution first = grasp(vrp,rlc,method);
+    Solution second = rvns(vrp, first);
+    iter++;
+    if (best.getCost() > second.getCost()) {
+      best = second;
+    }
+  }
+  auto t_end = std::chrono::high_resolution_clock::now();
+  auto timeCost = std::chrono::duration<double, std::milli>(t_end-t_start).count();
+  best.setTimeCost(timeCost);
+  return best;
+}
+
+Solution Gvns::rvns(Vrp vrp, Solution sol) {
+  Solution gvnsSol = sol;
+  int nk = (vrp.getNumberOfCustomers() * 15) / 100;
+  int i = 0;
+  int j = 0;
+  int nb = 3;
+  while(i < nk) {
+    Solution s = shake(vrp,gvnsSol,i);
+    while(j < nb) {
+      Solution local = LocalSearch(s,vrp,j);
+      if (s.getCost() > local.getCost()) {
+        s = local;
+        j = 0;
+      }
+      j++;
+    }
+    // Si mejoramos valor volvemos a k1
+    if (gvnsSol.getCost() > s.getCost()) {
+      gvnsSol = s;
+      i = 0;
+    }
+    i++;
+  }
+  return gvnsSol;
+}
+
+Solution Gvns::shake(Vrp vrp, Solution sol, int i) {
+  /*Solution shaked;
+  Solution generated;
+  int j = 0;
+  if (i == 0) return InterRouteLocalSearch(sol,vrp,sol.getCost());
+  if (i == 1) {
+    int random = rand() % 3;
+    Solution provisional = IntraRouteLocalSearchSwap(sol,vrp,sol.getCost());
+    return IntraRouteLocalSearch(provisional,vrp,provisional.getCost());
+  } 
+  if (i == 2) {
+    Solution provisional = IntraRouteLocalSearchSwap(sol,vrp,sol.getCost());
+    Solution provisional2 = IntraRouteLocalSearch(provisional,vrp,provisional.getCost());
+    return InterRouteLocalSearch(provisional2,vrp,provisional.getCost());
+  }
+  if (i == 3) {
+    Solution provisional = IntraRouteLocalSearchSwap(sol,vrp,sol.getCost());
+    Solution provisional2 = IntraRouteLocalSearch(provisional,vrp,provisional.getCost());
+    Solution provisional3 = InterRouteLocalSearch(provisional2,vrp,provisional.getCost());
+    //return InterRouteLocalSearchSwap(provisional3,vrp,provisional.getCost());
+    return provisional3;
+  }
+  shaked = IntraRouteLocalSearch(sol, vrp, sol.getCost());
+  return shaked;*/
+  return RandomSearch(vrp,sol,i);
+}
+
+Solution Gvns::grasp(Vrp vrp, int rlc, int method) {
   Nodes = vrp.getNodesCopy();
   Solution temp,final_solution;
   auto t_start = std::chrono::high_resolution_clock::now();
@@ -19,7 +91,21 @@ Solution Grasp::solve(Vrp vrp, int rlc, int method) {
   return final_solution;
 }
 
-Solution Grasp::ConstructGrasp(Vrp vrp, int rlc) {
+Solution Gvns::RandomSearch(Vrp vrp, Solution sol, int i) {
+  int j = 0;
+  Solution temp = sol;
+  if (i == 0) return InterRouteLocalSearch(temp,vrp,temp.getCost());
+  while (j < i) {
+    int random = rand() % 2;
+    if (random == 0) temp = IntraRouteLocalSearch(temp,vrp,temp.getCost());
+    if (random == 1) temp = IntraRouteLocalSearchSwap(temp,vrp,temp.getCost());
+    if (random == 2) temp = InterRouteLocalSearch(temp,vrp,temp.getCost());
+    j++;
+  }
+  return temp;
+}
+
+Solution Gvns::ConstructGrasp(Vrp vrp, int rlc) {
   vector<Node> solution;
   vector<Node> candidates;
   solution.push_back(Nodes[0]);
@@ -70,7 +156,7 @@ Solution Grasp::ConstructGrasp(Vrp vrp, int rlc) {
   return sol;
 }
 
-vector<Node> Grasp::LRC(Vrp vrp, Node actual, int limit) {
+vector<Node> Gvns::LRC(Vrp vrp, Node actual, int limit) {
   int nodes = 0;
   double CandCost;
   double EndCost;
@@ -99,13 +185,13 @@ vector<Node> Grasp::LRC(Vrp vrp, Node actual, int limit) {
   return solution;
 }
 
-Solution Grasp::LocalSearch(Solution sol, Vrp vrp, int method) {
+Solution Gvns::LocalSearch(Solution sol, Vrp vrp, int method) {
   Solution actual = sol;
   Solution best = actual;
   if (method == 1) actual = IntraRouteLocalSearch(actual, vrp, actual.getCost());
-  if (method == 3) actual = IntraRouteLocalSearchSwap(actual, vrp, actual.getCost());
+  if (method == 2) actual = IntraRouteLocalSearchSwap(actual, vrp, actual.getCost());
   if (method == 0) return InterRouteLocalSearch(actual, vrp, actual.getCost());
-  if (method == 2) return InterRouteLocalSearchSwap(actual, vrp, actual.getCost());
+  if (method == 3) return InterRouteLocalSearchSwap(actual, vrp, actual.getCost());
   //cout << "Original disposition: ";
   //sol.PrintNodes();
   //sol.checkCost(vrp.getDistances());
@@ -121,7 +207,7 @@ Solution Grasp::LocalSearch(Solution sol, Vrp vrp, int method) {
 }
 
 //Insertion
-Solution Grasp::IntraRouteLocalSearch(Solution old, Vrp vrp, double Cost) {
+Solution Gvns::IntraRouteLocalSearch(Solution old, Vrp vrp, double Cost) {
   vector<Node> rt;
   double BestNCost,NeigthboorCost;
   int SwapIndexA = -1, SwapIndexB = -1, SwapRoute =-1;
@@ -183,7 +269,7 @@ Solution Grasp::IntraRouteLocalSearch(Solution old, Vrp vrp, double Cost) {
   return sol;
 }
 
-Solution Grasp::IntraRouteLocalSearchSwap(Solution old, Vrp vrp, double Cost) {
+Solution Gvns::IntraRouteLocalSearchSwap(Solution old, Vrp vrp, double Cost) {
   vector<Node> rt;
   double BestNCost,NeigthboorCost;
   int SwapIndexA = -1, SwapIndexB = -1, SwapRoute =-1;
@@ -242,7 +328,7 @@ Solution Grasp::IntraRouteLocalSearchSwap(Solution old, Vrp vrp, double Cost) {
   return sol;
 }
 
-Solution Grasp::InterRouteLocalSearch(Solution old, Vrp vrp, double Cost) {
+Solution Gvns::InterRouteLocalSearch(Solution old, Vrp vrp, double Cost) {
   vector<Node> RouteFrom;
   vector<Node> RouteTo;
   int MovingNodeDemand = 0;
@@ -312,7 +398,7 @@ Solution Grasp::InterRouteLocalSearch(Solution old, Vrp vrp, double Cost) {
   return sol;
 }
 
-Solution Grasp::InterRouteLocalSearchSwap(Solution old, Vrp vrp, double Cost) {
+Solution Gvns::InterRouteLocalSearchSwap(Solution old, Vrp vrp, double Cost) {
   vector<Node> RouteFrom;
   vector<Node> RouteTo;
   int MovingNodeDemand = 0;

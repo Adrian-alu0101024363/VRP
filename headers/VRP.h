@@ -47,7 +47,7 @@ public:
   void printGraspTableu();
   vector<Node> ConstructGrasp();
   vector<Node> LRC(Node actual, int limit = 2);
-  Solution solve(int rlc, string via = "Intra-swap"){return method_->solve(*this, rlc, via);}
+  Solution solve(int rlc, int via = 1){return method_->solve(*this, rlc, via);}
 };
 #endif
 // Clase solution, clase problema como en el tsp, algoritmo, grasp en un bucle.

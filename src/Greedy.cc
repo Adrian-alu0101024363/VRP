@@ -1,6 +1,6 @@
 #include "../headers/Greedy.h"
 
-Solution Greedy::solve(Vrp vrp, int rlc, string method) {
+Solution Greedy::solve(Vrp vrp, int rlc, int method) {
   double CandCost, EndCost;
   int VehIndex = 0;
   double cost = 0;

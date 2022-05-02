@@ -9,7 +9,7 @@ class Vrp;
 
 class Traverse {
 public:
-virtual Solution solve(Vrp vrp, int rlc, string method = "Intra-swap") = 0;
+virtual Solution solve(Vrp vrp, int rlc, int method = 1) = 0;
 }; 
 
 

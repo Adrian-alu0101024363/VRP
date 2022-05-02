@@ -52,6 +52,7 @@
     "xlocnum": "cpp",
     "xloctime": "cpp",
     "chrono": "cpp",
-    "iomanip": "cpp"
+    "iomanip": "cpp",
+    "ratio": "cpp"
   }
 }
