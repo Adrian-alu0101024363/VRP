@@ -1,5 +1,13 @@
 #include "../headers/Greedy.h"
 
+/**
+ * @brief Given a vrp a rlc and the method aka what local search
+ * to use it resolve the vrp with a greedy method
+ * @param vrp 
+ * @param rlc 
+ * @param method 
+ * @return Solution 
+ */
 Solution Greedy::solve(Vrp vrp, int rlc, int method) {
   double CandCost, EndCost;
   int VehIndex = 0;

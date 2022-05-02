@@ -1,5 +1,13 @@
 #include "../headers/Gvns.h"
 
+/**
+ * @brief f Check if all the nodes of a given route
+ * are visited
+ * 
+ * @param nodes 
+ * @return true 
+ * @return false 
+ */
 bool Gvns::UnassignedCustomerExists(vector<Node> nodes) {
   for (int i = 1; i < nodes.size(); i++) {
     if (!nodes[i].getRouted()) return true;
@@ -7,6 +15,15 @@ bool Gvns::UnassignedCustomerExists(vector<Node> nodes) {
   return false;
 }
 
+/**
+ * @brief Given a vrp a rlc and the method aka what local search
+ * to use it resolve the vrp with a gvns method
+ * 
+ * @param vrp 
+ * @param rlc 
+ * @param method 
+ * @return Solution 
+ */
 Solution Gvns::solve(Vrp vrp, int rlc, int method) {
   Solution prov = grasp(vrp,rlc,method);
   Solution best = prov;
@@ -26,6 +43,13 @@ Solution Gvns::solve(Vrp vrp, int rlc, int method) {
   return best;
 }
 
+/**
+ * @brief rvns of the gvns that search for a rvns solution
+ * 
+ * @param vrp 
+ * @param sol 
+ * @return Solution 
+ */
 Solution Gvns::rvns(Vrp vrp, Solution sol) {
   Solution gvnsSol = sol;
   int nk = (vrp.getNumberOfCustomers() * 15) / 100;
@@ -52,6 +76,14 @@ Solution Gvns::rvns(Vrp vrp, Solution sol) {
   return gvnsSol;
 }
 
+/**
+ * @brief shake the initial grasp solution using a random
+ * i insertions /swaps
+ * @param vrp 
+ * @param sol 
+ * @param i 
+ * @return Solution 
+ */
 Solution Gvns::shake(Vrp vrp, Solution sol, int i) {
   /*Solution shaked;
   Solution generated;
@@ -79,6 +111,15 @@ Solution Gvns::shake(Vrp vrp, Solution sol, int i) {
   return RandomSearch(vrp,sol,i);
 }
 
+/**
+ * @brief Given a vrp a rlc and the method aka what local search
+ * to use it resolve the vrp with a grasp method
+ * 
+ * @param vrp 
+ * @param rlc 
+ * @param method 
+ * @return Solution 
+ */
 Solution Gvns::grasp(Vrp vrp, int rlc, int method) {
   Nodes = vrp.getNodesCopy();
   Solution temp,final_solution;
@@ -91,6 +132,14 @@ Solution Gvns::grasp(Vrp vrp, int rlc, int method) {
   return final_solution;
 }
 
+/**
+ * @brief shake the initial grasp solution using a random
+ * i insertions /swaps
+ * @param vrp 
+ * @param sol 
+ * @param i 
+ * @return Solution 
+ */
 Solution Gvns::RandomSearch(Vrp vrp, Solution sol, int i) {
   int j = 0;
   Solution temp = sol;
@@ -105,6 +154,13 @@ Solution Gvns::RandomSearch(Vrp vrp, Solution sol, int i) {
   return temp;
 }
 
+/**
+ * @brief Constructive part of grasp using rlc 
+ * with a value given
+ * @param vrp 
+ * @param rlc 
+ * @return Solution 
+ */
 Solution Gvns::ConstructGrasp(Vrp vrp, int rlc) {
   vector<Node> solution;
   vector<Node> candidates;
@@ -156,6 +212,14 @@ Solution Gvns::ConstructGrasp(Vrp vrp, int rlc) {
   return sol;
 }
 
+/**
+ * @brief Return a list of the best candidates within a
+ * limited number limit
+ * @param vrp 
+ * @param actual 
+ * @param limit 
+ * @return vector<Node> 
+ */
 vector<Node> Gvns::LRC(Vrp vrp, Node actual, int limit) {
   int nodes = 0;
   double CandCost;
@@ -185,6 +249,14 @@ vector<Node> Gvns::LRC(Vrp vrp, Node actual, int limit) {
   return solution;
 }
 
+/**
+ * @brief Recursive localSearch for grasp using the method
+ * selected by the int method 
+ * @param sol 
+ * @param vrp 
+ * @param method 
+ * @return Solution 
+ */
 Solution Gvns::LocalSearch(Solution sol, Vrp vrp, int method) {
   Solution actual = sol;
   Solution best = actual;
@@ -206,7 +278,14 @@ Solution Gvns::LocalSearch(Solution sol, Vrp vrp, int method) {
   return best;
 }
 
-//Insertion
+/**
+ * @brief Local search intra route with just one switch by insertion
+ * 
+ * @param old 
+ * @param vrp 
+ * @param Cost 
+ * @return Solution 
+ */
 Solution Gvns::IntraRouteLocalSearch(Solution old, Vrp vrp, double Cost) {
   vector<Node> rt;
   double BestNCost,NeigthboorCost;
@@ -269,6 +348,14 @@ Solution Gvns::IntraRouteLocalSearch(Solution old, Vrp vrp, double Cost) {
   return sol;
 }
 
+/**
+ * @brief Local search intra route with just one switch by swap
+ * 
+ * @param old 
+ * @param vrp 
+ * @param Cost 
+ * @return Solution 
+ */
 Solution Gvns::IntraRouteLocalSearchSwap(Solution old, Vrp vrp, double Cost) {
   vector<Node> rt;
   double BestNCost,NeigthboorCost;
@@ -328,6 +415,14 @@ Solution Gvns::IntraRouteLocalSearchSwap(Solution old, Vrp vrp, double Cost) {
   return sol;
 }
 
+/**
+ * @brief Local search inter route with just one switch by insertion
+ * 
+ * @param old 
+ * @param vrp 
+ * @param Cost 
+ * @return Solution 
+ */
 Solution Gvns::InterRouteLocalSearch(Solution old, Vrp vrp, double Cost) {
   vector<Node> RouteFrom;
   vector<Node> RouteTo;
@@ -398,6 +493,14 @@ Solution Gvns::InterRouteLocalSearch(Solution old, Vrp vrp, double Cost) {
   return sol;
 }
 
+/**
+ * @brief Local search inter route with just one switch by swap
+ * 
+ * @param old 
+ * @param vrp 
+ * @param Cost 
+ * @return Solution 
+ */
 Solution Gvns::InterRouteLocalSearchSwap(Solution old, Vrp vrp, double Cost) {
   vector<Node> RouteFrom;
   vector<Node> RouteTo;

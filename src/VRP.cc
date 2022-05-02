@@ -100,7 +100,7 @@ void Vrp::printGreedyTableu() {
 }
 
 /**
- * @brief 
+ * @brief print grasp tableu to console (not used)
  * 
  */
 void Vrp::printGraspTableu() {
